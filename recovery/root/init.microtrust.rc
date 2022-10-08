@@ -1,0 +1,159 @@
+on property:vold.decrypt=trigger_restart_framework
+    setprop soter.teei.vold.decrypt OK
+
+on fs
+    write /proc/bootprof "start teei_daemon (on fs)"
+
+   chmod 0660 /dev/teei_client
+    chown system system /dev/teei_client
+    chmod 0660 /dev/teei_config
+    chown system system /dev/teei_config
+    chmod 0660 /dev/tz_vfs
+    chown system system /dev/tz_vfs
+    chmod 0660 /dev/teei_fp
+    chown system /dev/teei_fp
+    chown system root /dev/ut_keymaster
+    chmod 0660 /dev/ut_keymaster
+    chmod 0660 /dev/emmcrpmb0
+    chown system system /dev/emmcrpmb0
+    chown system system /dev/utr_tui
+    chmod 0660 /dev/utr_tui
+
+
+
+    start teei_daemon
+    write /proc/bootprof "start teei_daemon end (on fs)"
+
+
+on post-fs-data
+    write /proc/bootprof "start teei cfg (on post-fs-data)"
+    mkdir /data/thh
+    mkdir /data/thh/system
+    mkdir /data/thh/tee_00
+    mkdir /data/thh/tee_01
+    mkdir /data/thh/tee_02
+    mkdir /data/thh/tee_03
+    mkdir /data/thh/tee_04
+    mkdir /data/thh/tee_05
+#Gionee <GN_BSP_FPR> <guomingzhi> <20170109> add for microtrust tee begin  
+    mkdir /data/thh/tee_06
+#Gionee <GN_BSP_FPR> <guomingzhi> <20170109> add for microtrust tee end  
+    chmod 0755 /data/thh
+    chown system system /data/thh
+    chmod 0755 /data/thh/system
+    chown system system /data/thh/system
+    chmod 0755 /data/thh/tee_00
+    chown system system /data/thh/tee_00
+    chmod 0755 /data/thh/tee_01
+    chown system system /data/thh/tee_01
+    chmod 0755 /data/thh/tee_02
+    chown system system /data/thh/tee_02
+    chmod 0755 /data/thh/tee_03
+    chown system system /data/thh/tee_03
+    chmod 0755 /data/thh/tee_04
+    chown system system /data/thh/tee_04
+    chmod 0755 /data/thh/tee_05
+    chown system system /data/thh/tee_05
+   
+    chmod 0755 /data/thh/tee_06
+    chown system system /data/thh/tee_06
+ 
+   # chmod 0660 /dev/teei_client
+   # chown system system /dev/teei_client
+   # chmod 0660 /dev/teei_config
+   # chown system system /dev/teei_config
+   # chmod 0660 /dev/tz_vfs
+   # chown system system /dev/tz_vfs
+   # chmod 0660 /dev/teei_fp
+   # chown system /dev/teei_fp
+   # chown system root /dev/ut_keymaster
+   # chmod 0660 /dev/ut_keymaster
+   # chmod 0660 /dev/emmcrpmb0
+   # chown system system /dev/emmcrpmb0
+   # chown system system /dev/utr_tui
+   # chmod 0660 /dev/utr_tui
+    write /proc/bootprof "start teei cfg end (on post-fs-data)"
+    restorecon_recursive /data/thh
+    setprop soter.encrypt.state OK
+    write /proc/bootprof "start teei cfg end (on restorecon-thh)"
+on boot
+    write /proc/bootprof "start teei_daemon (on boot)"
+    start teei_daemon
+    write /proc/bootprof "start teei_daemon end (on boot)"
+
+# teei service daemon
+service teei_daemon /system/vendor/bin/teei_daemon
+    class core
+    #Gionee <GN_BSP_FPR> <guomingzhi> <20170109> modified for microtrust tee begin  
+    user system
+    #Gionee <GN_BSP_FPR> <guomingzhi> <20170109> modified for microtrust tee end  
+    group system
+    disabled
+   # oneshot
+
+on property:soter.teei.init=INIT_OK
+#Gionee <GN_BSP_FPR> <guomingzhi> <20170427> add for thh begin
+    write /proc/bootprof "start ut_clientd (on fs)"
+    start ut_clientd
+    write /proc/bootprof "start ut_clientd end (on fs)"
+#Gionee <GN_BSP_FPR> <guomingzhi> <20170427> add for thh end
+    start init_thh_service
+    start utr_tui_daemon
+    #Gionee <GN_BSP_FPR> <guomingzhi> <20170221> add for ifaa begin
+    write /proc/bootprof "start ifaad (on fs)"
+    start ifaad
+#Gionee <GN_BSP_AUTITHEFT_SUPPORT> <wangh> <20170320> add for 85177 begin
+    start antitheftd
+#Gionee <GN_BSP_AUTITHEFT_SUPPORT> <wangh> <20170320> add for 85177 end
+#Gionee <GN_BSP_FPR> <lihuawu> <20170411> add for gpay begin
+    start gpayd
+#Gionee <GN_BSP_FPR> <lihuawu> <20170411> add for gpay end
+    write /proc/bootprof "start ifaad end (on fs)"
+    #Gionee <GN_BSP_FPR> <guomingzhi> <20170221> add for ifaa end
+#Gionee <GN_BSP_FPR> <guomingzhi> <20170310> modified for microtrust tee begin 
+service init_thh_service /vendor/bin/init_thh startload
+    class core
+    user system
+    group system
+    disabled
+    oneshot
+#Gionee <GN_BSP_FPR> <guomingzhi> <20170310> modified for microtrust tee end
+#Gionee <GN_BSP_FPR> <guomingzhi> <20170221> add for ifaa begin
+service ifaad /system/bin/ifaad
+    class core
+    user root
+    group system
+    disabled
+   # oneshot
+#Gionee <GN_BSP_FPR> <guomingzhi> <20170221> add for ifaa end
+#Gionee <GN_BSP_FPR> <lihuawu> <20170411> add for gpay begin
+service gpayd /system/bin/gpayd
+    class core
+    user root
+    group system
+    disabled
+   # oneshot
+#Gionee <GN_BSP_FPR> <lihuawu> <20170411> add for gpay end
+service utr_tui_daemon /system/bin/utr_tui_daemon
+    class core
+    user system
+    group system
+    disabled
+    
+#Gionee <GN_BSP_FPR> <guomingzhi> <20170427> add for thh begin
+# init_thh daemon
+service ut_clientd /vendor/bin/ut_clientd
+    class core
+    user system
+    group system shell
+    disabled
+#Gionee <GN_BSP_FPR> <guomingzhi> <20170427> add for thh end
+
+#Gionee <GN_BSP_AUTITHEFT_SUPPORT> <wangh> <20170320> modified for 85177 begin
+service antitheftd /system/bin/antitheftd
+    class core
+    user root
+    group system
+    disabled
+#Gionee <GN_BSP_AUTITHEFT_SUPPORT> <wangh> <20170320> add for 85177 end
+
